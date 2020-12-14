@@ -1,0 +1,29 @@
+nom: default
+monde: world
+duree: 3600
+
+porte:
+    id: id
+    duree: 30
+    title: "This gate is open for 30s"
+    subtitle: "RUN RUN RUN !"
+    pos1: 
+        x: 0
+        y: 0
+        z: 0
+    pos2:
+        x: 0
+        y: 255
+        z: 0
+    materiaux:
+        ouvert: minecraft:air
+        ferme: minecraft:stone
+    commande: "spawn Mob Here"
+
+salle:
+    id: id
+    emplacement:
+        x: 0
+        y: 0
+        z: 0
+    commande: "kill mob here"

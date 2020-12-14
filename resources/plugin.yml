@@ -26,14 +26,10 @@ softdepend: []
 ######################################
 
 commands:
-    Template:
-        aliases: [template, tmplt, t]
-        description: Template command description
-        usage: Template command usage
-    Chat:
-        aliases: [templatechat, tchat, tc]
-        description:
-        usage: Chat command usage
+    Dungeon:
+        aliases: [dun, d]
+        description: Command used to manage dungeons
+        usage: /dungeon help get info on command
 
 #########################################
 #    Permissions Related Information    #
