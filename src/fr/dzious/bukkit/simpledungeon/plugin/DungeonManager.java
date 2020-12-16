@@ -15,20 +15,7 @@ public class DungeonManager {
     Map<String, Dungeon> dungeons = new HashMap<>();
 
     public DungeonManager() {
-        List<?> yamlList = SimpleDungeon.configManager.getList("dungeons");
-        
-        if (yamlList == null) {
-            Logger.instance.error("\"dungeons does not exists in config or is wrongly formated");
-            return;
-        }
-
-        for (int i = 0; i < yamlList.size(); i++) {
-            if (yamlList.get(i) instanceof String) {
-                loadDungeon((String) yamlList.get(i));
-            } else {
-                Logger.instance.error(yamlList.get(i).toString() + " is not a valid dungeon name.");
-            }
-          }
+        reload();
     }
 
     public boolean loadDungeon(String dungeonName) {
@@ -43,12 +30,12 @@ public class DungeonManager {
             Logger.instance.warning("File name should be " + ChatColor.GREEN + dungeonName + ".yml");
             return (false);
         }
-
+        
         if (!Dungeon.isWellFormated(dungeonName)) {
             Logger.instance.warning("Dungeon : " + ChatColor.BOLD + dungeonName + ChatColor.RESET + " has missing elements.");
             return (false);
         }
-
+        
         dungeons.put(dungeonName, new Dungeon(dungeonName));
         
         return (true);
@@ -68,6 +55,19 @@ public class DungeonManager {
     }
 
     public void reload() {
+        List<?> yamlList = SimpleDungeon.configManager.getList("dungeons");
         
+        if (yamlList == null) {
+            Logger.instance.error("\"dungeons does not exists in config or is wrongly formated");
+            return;
+        }
+
+        for (int i = 0; i < yamlList.size(); i++) {
+            if (yamlList.get(i) instanceof String) {
+                loadDungeon((String) yamlList.get(i));
+            } else {
+                Logger.instance.error(yamlList.get(i).toString() + " is not a valid dungeon name.");
+            }
+          }
     }
 }

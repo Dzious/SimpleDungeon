@@ -5,15 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.util.BlockIterator;
+
+import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
+import fr.dzious.bukkit.simpledungeon.utils.Logger;
 
 public class Gate {
     List<Location> locations = new ArrayList<>();
@@ -28,19 +29,48 @@ public class Gate {
     }
 
     public void open() {
-        BlockIterator it = new BlockIterator(locations.get(0).getWorld(), locations.get(0).toVector(), locations.get(0).subtract(locations.get(1)).toVector(), 0, 0);
-        
-        while (it.hasNext()) {
-            Block block = it.next();
-            if (!block.getChunk().isLoaded() && !block.getChunk().load())
-                continue;
-            block.setType(materials.get("open"));
+        Logger.instance.debugConsole("Open");
+
+        int minX = (int) Math.min(locations.get(0).getX(), locations.get(1).getX());
+        int minY = (int) Math.min(locations.get(0).getY(), locations.get(1).getY());
+        int minZ = (int) Math.min(locations.get(0).getZ(), locations.get(1).getZ());
+
+        int maxX = (int) Math.max(locations.get(0).getX(), locations.get(1).getX());
+        int maxY = (int) Math.max(locations.get(0).getY(), locations.get(1).getY());
+        int maxZ = (int) Math.max(locations.get(0).getZ(), locations.get(1).getZ());
+
+        World world = locations.get(0).getWorld();
+        Block block;
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    block = world.getBlockAt(x, y, z);                    
+                    if (!block.getChunk().isLoaded() && !block.getChunk().load())
+                        continue;
+                    block.setType(materials.get("open"));
+                    Logger.instance.debugConsole("Block at X=" + x + " Y=" + y + " Z=" + z + " has been set to " + materials.get("open"));
+                    Logger.instance.debugPlayer("Block at X=" + x + " Y=" + y + " Z=" + z + " has been set to " + materials.get("open"));
+                }
+            }
         }
+
+        // BlockIterator it = new BlockIterator(locations.get(0).getWorld(), locations.get(0).toVector(), locations.get(0).subtract(locations.get(1)).toVector(), 0, 0);
+
+        // while (it.hasNext()) {
+        //     Block block = it.next();
+        //     if (!block.getChunk().isLoaded() && !block.getChunk().load())
+        //         continue;
+        //     block.setType(materials.get("open"));
+        // }
+
+
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.getLocation().distance(locations.get(0)) <= around) {
                 p.sendTitle(titles.get("title"),titles.get("subtitle"), 5, 10, 5);
             }
         }
+
         Bukkit.getScheduler().scheduleSyncDelayedTask(SimpleDungeon.getInstance(), new Runnable() {
             public void run() {
                 close();
@@ -51,20 +81,53 @@ public class Gate {
     }
 
     public void close() {
-        BlockIterator it = new BlockIterator(locations.get(0).getWorld(), locations.get(0).toVector(), locations.get(0).subtract(locations.get(1)).toVector(), 0, 0);
+        Logger.instance.debugConsole("Close");
+
+        int minX = (int) Math.min(locations.get(0).getX(), locations.get(1).getX());
+        int minY = (int) Math.min(locations.get(0).getY(), locations.get(1).getY());
+        int minZ = (int) Math.min(locations.get(0).getZ(), locations.get(1).getZ());
+
+        int maxX = (int) Math.max(locations.get(0).getX(), locations.get(1).getX());
+        int maxY = (int) Math.max(locations.get(0).getY(), locations.get(1).getY());
+        int maxZ = (int) Math.max(locations.get(0).getZ(), locations.get(1).getZ());
+
+        Logger.instance.debugConsole("Min : X=" + minX + " Y=" + minY + " Z=" + minZ);
+        Logger.instance.debugConsole("Max : X=" + maxX + " Y=" + maxY + " Z=" + maxZ);
+
+        World world = locations.get(0).getWorld();
+        Block block;
+
         boolean forceLoaded = false;
 
-        while (it.hasNext()) {
-            Block block = it.next();
-            forceLoaded = false;
-            if (!block.getChunk().isLoaded())
-                forceLoaded = block.getChunk().load();
-                if (forceLoaded == false)
-                    continue;
-            block.setType(materials.get("close"));
-            if (forceLoaded == true)
-                block.getChunk().unload();
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    block = world.getBlockAt(x, y, z);                    
+                    forceLoaded = false;
+                    if (!block.getChunk().isLoaded() && !(forceLoaded = block.getChunk().load()))
+                        continue;
+                    block.setType(materials.get("close"));
+                    Logger.instance.debugConsole("Block at X=" + x + " Y=" + y + " Z=" + z + " has been set to " + materials.get("close"));
+                    Logger.instance.debugPlayer("Block at X=" + x + " Y=" + y + " Z=" + z + " has been set to " + materials.get("close"));
+                    if (forceLoaded == true)
+                        block.getChunk().unload();
+                }
+            }
         }
+
+        // BlockIterator it = new BlockIterator(locations.get(0).getWorld(), locations.get(0).toVector(), locations.get(0).subtract(locations.get(1)).toVector(), 0, 0);
+
+        // while (it.hasNext()) {
+        //     Block block = it.next();
+        //     forceLoaded = false;
+        //     if (!block.getChunk().isLoaded())
+        //         forceLoaded = block.getChunk().load();
+        //         if (forceLoaded == false)
+        //             continue;
+        //     block.setType(materials.get("close"));
+        //     if (forceLoaded == true)
+        //         block.getChunk().unload();
+        // }
         Bukkit.dispatchCommand(SimpleDungeon.getInstance().getServer().getConsoleSender(), command);
     }
 
@@ -75,27 +138,27 @@ public class Gate {
     public void reload(YamlConfiguration dungeonFile, int id) {
         locations.add(new Location(SimpleDungeon.getInstance().getServer().getWorld(
             dungeonFile.getString("world")),
-            dungeonFile.getInt("gate_"+ id +".start.x"),
-            dungeonFile.getInt("gate_"+ id +".start.y"),
-            dungeonFile.getInt("gate_"+ id +".start.z")));
+            dungeonFile.getInt("gate_" + id + ".start.x"),
+            dungeonFile.getInt("gate_" + id + ".start.y"),
+            dungeonFile.getInt("gate_" + id + ".start.z")));
             
             locations.add(new Location(SimpleDungeon.getInstance().getServer().getWorld(
             dungeonFile.getString("world")),
-            dungeonFile.getInt("gate_"+ id +".end.x"),
-            dungeonFile.getInt("gate_"+ id +".end.y"),
-            dungeonFile.getInt("gate_"+ id +".end.z")));
+            dungeonFile.getInt("gate_" + id + ".end.x"),
+            dungeonFile.getInt("gate_" + id + ".end.y"),
+            dungeonFile.getInt("gate_" + id + ".end.z")));
     
-            materials.put("open", Material.valueOf(dungeonFile.getString("gate_"+ id +".material.open")));
-            materials.put("close", Material.valueOf(dungeonFile.getString("gate_"+ id +".material.close")));
+            materials.put("open", Material.valueOf(dungeonFile.getString("gate_" + id + ".material.open").toUpperCase()));
+            materials.put("close", Material.valueOf(dungeonFile.getString("gate_" + id + ".material.close").toUpperCase()));
     
-            titles.put("title", dungeonFile.getString("gate_"+ id +".title"));
-            titles.put("title", dungeonFile.getString("gate_"+ id +".subtitle"));
+            titles.put("title", dungeonFile.getString("gate_" + id + ".title"));
+            titles.put("subtitle", dungeonFile.getString("gate_" + id + ".subtitle"));
     
-            duration = dungeonFile.getInt("gate_"+ id +".duration");
+            duration = dungeonFile.getInt("gate_" + id + ".duration");
     
-            command = dungeonFile.getString("gate_"+ id +".command");
+            command = dungeonFile.getString("gate_" + id + ".command");
     
-            around = dungeonFile.getInt("gate_"+ id +".around");
+            around = dungeonFile.getInt("gate_" + id + ".around");
     }
 
     public static boolean isWellFormated(YamlConfiguration dungeonFile, int id) {

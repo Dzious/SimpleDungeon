@@ -2,14 +2,14 @@ package fr.dzious.bukkit.simpledungeon.plugin;
 
 import java.util.Map;
 
-import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+
+import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
 
 public class Room {
     Location location;

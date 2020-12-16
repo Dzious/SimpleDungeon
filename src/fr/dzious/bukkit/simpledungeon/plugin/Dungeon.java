@@ -22,7 +22,7 @@ public class Dungeon {
     int duration;
 
     Location resetLocation;
-    Map <String, String> resetTitles;
+    Map <String, String> resetTitles = new HashMap<>();
     String resetCommand;
     
     Map<Integer, Gate> gates = new HashMap<>();
@@ -34,7 +34,7 @@ public class Dungeon {
 
         try {
             YamlConfiguration dungeonFile = new YamlConfiguration();
-            dungeonFile.load(SimpleDungeon.getInstance().getDataFolder().getPath() + "/" + dungeonName);
+            dungeonFile.load(SimpleDungeon.getInstance().getDataFolder().getPath() + "/dungeons/" + dungeonName + ".yml");
 
             name = dungeonName;
 
@@ -56,15 +56,16 @@ public class Dungeon {
 
             resetCommand = dungeonFile.getString("reset.command");
 
-            for (int id = 0; dungeonFile.contains("gate_" + id); id++) {
+            for (int id = 1; dungeonFile.contains("gate_" + id); id++) {
                 gates.put(id, new Gate(dungeonFile, id));
             }
 
-            for (int id = 0; dungeonFile.contains("room_" + id); id++) {
+            for (int id = 1; dungeonFile.contains("room_" + id); id++) {
                 rooms.put(id, new Room(dungeonFile, id));
             }
         } catch (Exception e) {
             Logger.instance.warning("Dungeon " + dungeonName + " file could not be loaded.");
+            e.printStackTrace();
         }
     }
 
@@ -100,10 +101,8 @@ public class Dungeon {
         
         try {
             YamlConfiguration dungeonFile = new YamlConfiguration();
-            dungeonFile.load(SimpleDungeon.getInstance().getDataFolder().getPath() + "/" + dungeonName);
 
-            int i = 0;
-            Logger.instance.debugConsole("ici : " + i++);
+            dungeonFile.load(SimpleDungeon.getInstance().getDataFolder().getPath() + "/dungeons/" + dungeonName + ".yml");
 
             if (!dungeonFile.contains("world")  ||
                 !dungeonFile.contains("duration") ||
@@ -118,33 +117,29 @@ public class Dungeon {
                     Logger.instance.warning("File " + dungeonName + " has a reset element missing.");
                     return (false);
             }
-            Logger.instance.debugConsole("ici : " + i++);
 
             int id = 0;
-            for (id = 0; dungeonFile.contains("gate_" + id); id++) {
+            for (id = 1; dungeonFile.contains("gate_" + id); id++) {
                 if (!Gate.isWellFormated(dungeonFile, id)) {
                     Logger.instance.warning("Gate " + id + " of " + dungeonName + " is not formated correctly.");
                     return (false); 
                 }
             }
-            Logger.instance.debugConsole("ici : " + i++);
-            if (id == 0) {
+            if (id == 1) {
                 Logger.instance.warning("Dungeon " + dungeonName + " is not formated correctly.");
                 return (false);
             }
-            Logger.instance.debugConsole("ici : " + i++);
-            for (id = 0; dungeonFile.contains("room_" + id); id++) {
+
+            for (id = 1; dungeonFile.contains("room_" + id); id++) {
                 if (!Room.isWellFormated(dungeonFile, id)) {
                     Logger.instance.warning("Gate " + id + " of " + dungeonName + " is not formated correctly.");
                     return (false);
                 }
             }
-            Logger.instance.debugConsole("ici : " + i++);
-            if (id == 0) {
+            if (id == 1) {
                 Logger.instance.warning("Dungeon " + dungeonName + " is not formated correctly.");
                 return (false);
             }
-            Logger.instance.debugConsole("ici : " + i++);
         } catch (Exception e) {
             Logger.instance.warning("Dungeon " + dungeonName + " file could not be loaded.");
             return (false);
@@ -200,5 +195,9 @@ public class Dungeon {
         } catch (Exception e) {
             Logger.instance.warning("Dungeon " + name + " file could not be loaded.");
         }
+    }
+
+    public boolean isRunning() {
+        return (isRunning);
     }
 }

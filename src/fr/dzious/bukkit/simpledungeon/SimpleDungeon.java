@@ -85,10 +85,13 @@ public class SimpleDungeon extends JavaPlugin {
 
         Logger.instance.debugConsole("exists : " + configFile.exists());
         Logger.instance.debugConsole("Path : " + getDataFolder() + "/config.yml");
-        
 
-        if (!configFile.exists())
+    
+        if (!configFile.exists()) {
+            if (!getDataFolder().exists())
+                getDataFolder().mkdirs();
             Utils.copy("/config.yml", getDataFolder() + "/config.yml");
+        }
         configManager.load(getDataFolder() + "/config.yml");
     }
 
