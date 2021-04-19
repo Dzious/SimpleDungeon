@@ -25,7 +25,7 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <plugin.ApiVersion>1.16</plugin.ApiVersion>
-        <project.ApiVersion>1.16.4</project.ApiVersion>
+        <project.ApiVersion>1.16.5</project.ApiVersion>
     </properties>
 
     <repositories>
@@ -36,6 +36,12 @@
     </repositories>
 
     <dependencies>
+        <!-- <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot</artifactId>
+            <version>${project.ApiVersion}-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency> -->
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>

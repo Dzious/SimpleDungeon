@@ -1,0 +1,175 @@
+# Never used. Only here to help admins
+name: auberge
+# Name of the world the dungeon will be in
+world: aventurev2
+# Duration (in seconds) ater wich the dungeon will reset
+duration: 3600
+
+
+dungeon:
+    location:
+        x: 127
+        y: 87
+        z: 135
+        yaw: 90
+        pitch: 0
+    range: 10
+    running_error:
+        # Range (in blocks) in which the title will be spread (around location position) 
+        # Title and subtitle that will be prompt to players when the dungeon reset
+        title: "Ce donjon est deja en cours"
+        subtitle: "Reviens plus tard"
+        # Command to execute if the dungeon is running and a player try to open it
+        commands: ["give {player} bedrock 1"]
+    reset:
+        # Title and subtitle that will be prompt to players when the dungeon reset
+        title: "Vous avez ete repousse"
+        subtitle: "Retentez votre chance"
+        # Command to execute after the dungeon resets
+        commands: ["broadcast Le donjon de l'auberge est de nouveau ouvert"]
+
+
+###########
+#  Gates  #
+###########
+
+# Important information, Gate id start to 1. 
+# Gate with an id lower or equal to 0 wont be loaded
+# Same thing for gates that have a String as id
+
+gate_1:
+    # Duration (in seconds) ater wich the gate will close
+    duration: 30
+    # Range (in blocks) in with title will be spread (around start position) 
+    around: 10
+    # Title and subtitle that will be prompt to player when the gate open
+    title: "Cette porte est ouvert pendant 30s"
+    subtitle: "Courrez"
+    # Start location of the gate
+    start: 
+        x: 124
+        y: 87
+        z: 135
+    # End location of the gate
+    start: 
+        x: 124
+        y: 87
+        z: 135
+    # Material used for the gate
+    material:
+        open: air
+        close: barrier
+    # Command to execute when the gate closes (it can be a command to summon a mob for example)
+    commands: ["say Commande porte fermee, spawn mob"]
+    # Not Implemented Yet. Room to reset when the door closes
+    # reset_room:
+
+
+gate_2:
+    # Duration (in seconds) ater wich the gate will close
+    duration: 30
+    # Range (in blocks) in with title will be spread (around start position) 
+    around: 10
+    # Title and subtitle that will be prompt to player when the gate open
+    title: "Cette porte est ouvert pendant 30s"
+    subtitle: "Courrez"
+    # Start location of the gate
+    start: 
+        x: 85
+        y: 82
+        z: 134
+    # End location of the gate
+    start: 
+        x: 85
+        y: 84
+        z: 135
+    # Material used for the gate
+    material:
+        open: air
+        close: nether_wart_block
+    # Command to execute when the gate closes (it can be a command to summon a mob for example)
+    commands: ["say Commande porte fermee, spawn mob"]
+    # Not Implemented Yet. Room to reset when the door closes
+    # reset_room:
+
+
+gate_3:
+    # Duration (in seconds) ater wich the gate will close
+    duration: 30
+    # Range (in blocks) in with title will be spread (around start position) 
+    around: 10
+    # Title and subtitle that will be prompt to player when the gate open
+    title: "Cette porte est ouvert pendant 30s"
+    subtitle: "Courrez"
+    # Start location of the gate
+    start: 
+        x: 36
+        y: 81
+        z: 134
+    # End location of the gate
+    start: 
+        x: 36
+        y: 83
+        z: 135
+    # Material used for the gate
+    material:
+        open: air
+        close: cyan_concrete_powder
+    # Command to execute when the gate closes (it can be a command to summon a mob for example)
+    commands: ["say Commande porte fermee, spawn mob"]
+    # Not Implemented Yet. Room to reset when the door closes
+    # reset_room:
+
+
+###########
+#  Rooms  #
+###########
+# Important information, Rooms id start to 1. 
+# Room with an id lower or equal to 0 wont be loaded
+# Same thing for Rooms that have a String as id
+
+room_1:
+    # Not Implemented yet. Shape of the room (circle or square)
+    shape: circle
+    circle:
+        x: 97
+        y: 82
+        z: 134
+        
+        # Radius of the room (in blocks)
+        radius: 10
+        
+    # square:
+    #     corner_1:
+    #         x: 0
+    #         y: 4
+    #         z: 12
+    #     corner_2:
+    #         x: 0
+    #         y: 4
+    #         z: 12
+    commands: ["say Commande reset de la salle pour kills les mobs"]
+    disable_loot: false
+
+room_2:
+    # Not Implemented yet. Shape of the room (circle or square)
+    shape: circle
+    circle:
+        x: 51
+        y: 82
+        z: 135
+        
+        # Radius of the room (in blocks)
+        radius: 10
+        
+    # square:
+    #     corner_1:
+    #         x: 0
+    #         y: 4
+    #         z: 12
+    #     corner_2:
+    #         x: 0
+    #         y: 4
+    #         z: 12
+    commands: ["say Commande reset de la salle pour kills les mobs"]
+    disable_loot: false

@@ -1,33 +1,39 @@
 # Never used. Only here to help admins
 name: example
 # Name of the world the dungeon will be in
-world: world
+world: nether
 # Duration (in seconds) ater wich the dungeon will reset
 duration: 3600
 
 
-dungeon:
+running:
+    # Position where the message will be spread from
+    location:
+        x: 0
+        y: 0
+        z: 0
+    # Range (in blocks) in which the title will be spread (around location position) 
+    around: 30
+    # Title and subtitle that will be prompt to players when the dungeon reset
+    title: "This dungeon is running"
+    subtitle: "Come back later"
+    # Command to execute after the dungeon resets
+    commands: ["fill 0 10 0 0 15 0 minecraft:bedrock"]
+
+# Reset Informations
+reset:
+    # Position the player will be teleported to
     location:
         x: 0
         y: 0
         z: 0
         yaw: 0
         pitch: 0
-    range: 30
-    running_error:
-        # Range (in blocks) in which the title will be spread (around location position) 
-        # Title and subtitle that will be prompt to players when the dungeon reset
-        title: "This dungeon is running"
-        subtitle: "Come back later"
-        # Command to execute if the dungeon is running and a player try to open it
-        commands: ["give Dzious minecraft:bedrock 1"]
-    reset:
-        # Title and subtitle that will be prompt to players when the dungeon reset
-        title: "This dungeon is now closed"
-        subtitle: "Sorry"
-        # Command to execute after the dungeon resets
-        commands: ["msg Dzious reset", "msg Dzious msg2", "execute in minecraft:the_nether run fill 0 10 0 0 15 0 minecraft:bedrock"]
-
+    # Title and subtitle that will be prompt to players when the dungeon reset
+    title: "This dungeon is now closed"
+    subtitle: "Sorry"
+    # Command to execute after the dungeon resets
+    commands: ["broadcast dungeon Example is now open", "execute in minecraft:world_nether run fill 0 10 0 0 15 0 minecraft:bedrock"]
 
 
 ###########
@@ -38,7 +44,7 @@ dungeon:
 # Gate with an id lower or equal to 0 wont be loaded
 # Same thing for gates that have a String as id
 
-gate_<id>:
+gate_0:
     # Duration (in seconds) ater wich the gate will close
     duration: 30
     # Range (in blocks) in with title will be spread (around start position) 
@@ -73,18 +79,16 @@ gate_<id>:
 # Room with an id lower or equal to 0 wont be loaded
 # Same thing for Rooms that have a String as id
 
-room_<id>:
+room_0:
     # Center of the room
     location:
         x: 0
         y: 4
         z: 12
     # Not Implemented yet. Shape of the room (circle or square)
-    shape: circle
-    
-    circle:
-        # Radius of the room (in blocks)
-        radius: 10
+    # shape:
+    # circle:
+    #     radius:
     # square:
     #     corner_1:
     #         x: 0
@@ -94,5 +98,7 @@ room_<id>:
     #         x: 0
     #         y: 4
     #         z: 12
-    commands: ["kill mob"]
+    # Radius of the room (in blocks) (room is considered to be a circle)
+    size: 3
+    commands: ["say kill mob"]
     disable_loot: false

@@ -15,14 +15,17 @@ import org.bukkit.entity.Player;
 
 import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
 import fr.dzious.bukkit.simpledungeon.utils.Logger;
+import fr.dzious.bukkit.simpledungeon.utils.Utils;
+import net.md_5.bungee.api.ChatColor;
 
 public class Gate {
     List<Location> locations = new ArrayList<>();
     Map<String, String> titles = new HashMap<>();
     Map<String, Material> materials = new HashMap<>();
-    String command;
+    List<String> commands = new ArrayList<>();
     int duration;
     int around;
+    int resetRoomId = 0;
 
     Gate(YamlConfiguration dungeonFile, int id) {
         reload(dungeonFile, id);
@@ -67,20 +70,18 @@ public class Gate {
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.getLocation().distance(locations.get(0)) <= around) {
-                p.sendTitle(titles.get("title"),titles.get("subtitle"), 5, 10, 5);
+                p.sendTitle(titles.get("title"),titles.get("subtitle"), 5, 100, 5);
             }
         }
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(SimpleDungeon.getInstance(), new Runnable() {
             public void run() {
-                close();
-                // Code here...
-                // This code will fire after the specified delay [below]
+                close(true);
             }
         }, (long)(duration * 20));
     }
 
-    public void close() {
+    public void close(boolean runCommand) {
         Logger.instance.debugConsole("Close");
 
         int minX = (int) Math.min(locations.get(0).getX(), locations.get(1).getX());
@@ -128,37 +129,67 @@ public class Gate {
         //     if (forceLoaded == true)
         //         block.getChunk().unload();
         // }
-        Bukkit.dispatchCommand(SimpleDungeon.getInstance().getServer().getConsoleSender(), command);
+        // for (String command : resetCommands) {
+        //     Logger.instance.debugConsole("Command : " + Utils.formatCommand(command, dungeonLocation));
+        //     Logger.instance.debugConsole("Result of command : " + command + " is : " + Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.formatCommand(command, dungeonLocation)));
+        // }
+        if (runCommand == true) {
+            for (String command : commands) {
+                boolean rtn = Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.formatCommand(command, locations.get(0)));
+                Logger.instance.debugConsole("Command " + command + " return value is " + rtn);
+            }
+        }
     }
 
     public int getDuration() {
         return (duration);
     }
 
+    public int getResetRoomId() {
+        return (resetRoomId);
+    }
+
     public void reload(YamlConfiguration dungeonFile, int id) {
+        Logger.instance.info("Gate " + id + " is loading.");
+
         locations.add(new Location(SimpleDungeon.getInstance().getServer().getWorld(
             dungeonFile.getString("world")),
             dungeonFile.getInt("gate_" + id + ".start.x"),
             dungeonFile.getInt("gate_" + id + ".start.y"),
             dungeonFile.getInt("gate_" + id + ".start.z")));
             
-            locations.add(new Location(SimpleDungeon.getInstance().getServer().getWorld(
+        locations.add(new Location(SimpleDungeon.getInstance().getServer().getWorld(
             dungeonFile.getString("world")),
             dungeonFile.getInt("gate_" + id + ".end.x"),
             dungeonFile.getInt("gate_" + id + ".end.y"),
             dungeonFile.getInt("gate_" + id + ".end.z")));
     
-            materials.put("open", Material.valueOf(dungeonFile.getString("gate_" + id + ".material.open").toUpperCase()));
-            materials.put("close", Material.valueOf(dungeonFile.getString("gate_" + id + ".material.close").toUpperCase()));
+        materials.put("open", Material.valueOf(dungeonFile.getString("gate_" + id + ".material.open").toUpperCase()));
+        materials.put("close", Material.valueOf(dungeonFile.getString("gate_" + id + ".material.close").toUpperCase()));
     
-            titles.put("title", dungeonFile.getString("gate_" + id + ".title"));
-            titles.put("subtitle", dungeonFile.getString("gate_" + id + ".subtitle"));
+        titles.put("title", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("gate_" + id + ".title")));
+        titles.put("subtitle", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("gate_" + id + ".subtitle")));
     
-            duration = dungeonFile.getInt("gate_" + id + ".duration");
+        duration = dungeonFile.getInt("gate_" + id + ".duration");
     
-            command = dungeonFile.getString("gate_" + id + ".command");
-    
-            around = dungeonFile.getInt("gate_" + id + ".around");
+        List<?> yamlList = dungeonFile.getList("gate_" + id + ".commands");
+        Logger.instance.debugConsole(" gate_" + id + ".commands list  : " + yamlList);
+
+        for (int i = 0; yamlList != null &&  i < yamlList.size(); i++) {
+            if (yamlList.get(i) instanceof String) {
+                commands.add((String)yamlList.get(i));
+                Logger.instance.debugConsole("Command " + (String)yamlList.get(i) + " added upon gate close.");
+            } else {
+                Logger.instance.warning(yamlList.get(i).toString() + " is not considered as string.");
+            }
+        }
+        around = dungeonFile.getInt("gate_" + id + ".around");
+        if (dungeonFile.contains("gate_"+ id + ".reset_room")) {
+            resetRoomId = dungeonFile.getInt("gate_"+ id + ".reset_room");
+            Logger.instance.info("Gate " + id + " will reset room " + resetRoomId);
+        }
+
+        Logger.instance.info("Gate " + id + " loaded properly.");
     }
 
     public static boolean isWellFormated(YamlConfiguration dungeonFile, int id) {
@@ -173,7 +204,7 @@ public class Gate {
             !dungeonFile.contains("gate_"+ id +".title") &&
             !dungeonFile.contains("gate_"+ id +".subtitle") &&
             !dungeonFile.contains("gate_"+ id +".duration") &&
-            !dungeonFile.contains("gate_"+ id +".command") &&
+            !dungeonFile.contains("gate_"+ id +".commands") &&
             !dungeonFile.contains("gate_"+ id +".around")) {
                 return (false);
         }

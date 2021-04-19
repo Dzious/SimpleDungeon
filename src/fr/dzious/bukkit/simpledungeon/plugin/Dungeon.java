@@ -1,5 +1,6 @@
 package fr.dzious.bukkit.simpledungeon.plugin;
 
+import java.io.Console;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,88 +14,88 @@ import org.bukkit.entity.Player;
 
 import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
 import fr.dzious.bukkit.simpledungeon.utils.Logger;
+import fr.dzious.bukkit.simpledungeon.utils.Utils;
+import net.md_5.bungee.api.ChatColor;
 
 public class Dungeon {
     
-    boolean isRunning = false;
-    String name;
-    World world;
-    int duration;
+    private boolean isRunning = false;
+    private String name;
+    private World world;
+    private int duration = 0;
+    private int dungeonRange = 0;
 
-    Location resetLocation;
-    Map <String, String> resetTitles = new HashMap<>();
-    String resetCommand;
+    private Location dungeonLocation;
+    private Map <String, String> titles = new HashMap<>();
+    private List<String> resetCommands = new ArrayList<>();
+    private List<String> errorCommands = new ArrayList<>();
     
-    Map<Integer, Gate> gates = new HashMap<>();
-    Map<Integer, Room> rooms = new HashMap<>();
+    private Map<Integer, Gate> gates = new HashMap<>();
+    private Map<Integer, Room> rooms = new HashMap<>();
 
+    private int dungeonTaskId = -1;
 
     public Dungeon(String dungeonName) {
         name = dungeonName;
-
-        try {
-            YamlConfiguration dungeonFile = new YamlConfiguration();
-            dungeonFile.load(SimpleDungeon.getInstance().getDataFolder().getPath() + "/dungeons/" + dungeonName + ".yml");
-
-            name = dungeonName;
-
-            world = SimpleDungeon.getInstance().getServer().getWorld(dungeonFile.getString("world"));
-
-            duration = dungeonFile.getInt("duration");
-
-            resetLocation = new Location(world,
-            dungeonFile.getInt("reset.location.x"),
-            dungeonFile.getInt("reset.location.y"),
-            dungeonFile.getInt("reset.location.z"),
-            dungeonFile.getInt("reset.location.yaw"),
-            dungeonFile.getInt("reset.location.pitch"));    
-
-            resetTitles.put("title", dungeonFile.getString("reset.title"));
-
-            resetTitles.put("subtitle", dungeonFile.getString("reset.subtitle"));
-                
-
-            resetCommand = dungeonFile.getString("reset.command");
-
-            for (int id = 1; dungeonFile.contains("gate_" + id); id++) {
-                gates.put(id, new Gate(dungeonFile, id));
-            }
-
-            for (int id = 1; dungeonFile.contains("room_" + id); id++) {
-                rooms.put(id, new Room(dungeonFile, id));
-            }
-        } catch (Exception e) {
-            Logger.instance.warning("Dungeon " + dungeonName + " file could not be loaded.");
-            e.printStackTrace();
-        }
+        reload();
     }
 
     public void start() {
-        if (!isRunning) {
-            isRunning = true;
-            Bukkit.getScheduler().scheduleSyncDelayedTask(SimpleDungeon.getInstance(), new Runnable() {
+        if (!isRunning  && dungeonTaskId == -1) {
+            dungeonTaskId = Bukkit.getScheduler().scheduleSyncDelayedTask(SimpleDungeon.getInstance(), new Runnable() {
                 public void run() {
                     reset();
                 }
             }, (long)(duration * 20));
+
+            if (dungeonTaskId == -1) {
+                Logger.instance.warning("Dungeon " + name + " failed to start");
+            } else {
+                isRunning = true;
+                Logger.instance.info("Dungeon " + name + " started.");
+            }
+            gates.get(1).open();
         } else {
             for (Player p : Bukkit.getOnlinePlayers()) {
-                if (p.getLocation().distance(resetLocation) <= 5) {
-                    p.sendTitle(resetTitles.get("title"), resetTitles.get("subtitle"), 5, 10, 5);
-                  }
-                
+                if (p.getLocation().distance(dungeonLocation) <= dungeonRange) {
+                    p.sendTitle(titles.get("running_error_title"), titles.get("running_error_subtitle"), 5, 100, 5);
+                }
+            }
+            for (String command : errorCommands) {
+                boolean result = Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.formatCommand(command, dungeonLocation));
+                Logger.instance.debugConsole("Result of command : " + command + " is : " + result);
             }
         }
     }
 
     public void reset() {
-        for (Map.Entry<Integer, Room> room : rooms.entrySet()) {
-            room.getValue().reset(world, resetLocation, resetTitles);
-        }
-        for (Map.Entry<Integer, Gate> gate : gates.entrySet()) {
-            gate.getValue().close();
+        if (isRunning == false) {
+            Logger.instance.info("Dungeon " + name + " is not running.");
+            return;
         }
         isRunning = false;
+        Logger.instance.info("Dungeon " + name + " stopped.");
+        if (Bukkit.getScheduler().isQueued(dungeonTaskId))
+            Bukkit.getScheduler().cancelTask(dungeonTaskId);
+        for (Map.Entry<Integer, Room> room : rooms.entrySet()) {
+            room.getValue().reset(world, dungeonLocation, titles.get("reset_title"), titles.get("reset_subtitle"));
+        }
+        for (Map.Entry<Integer, Gate> gate : gates.entrySet()) {
+            gate.getValue().close(false);
+        }
+        dungeonTaskId = -1;
+        for (String command : resetCommands) {
+            Logger.instance.debugConsole("Command : " + Utils.formatCommand(command, dungeonLocation));
+            Logger.instance.debugConsole("Result of command : " + command + " is : " + Bukkit.dispatchCommand(Bukkit.getServer().getConsoleSender(), Utils.formatCommand(command, dungeonLocation)));
+        }
+    }
+
+    public void resetRoom(int roomId) {
+        if (roomId > 0 && rooms.get(roomId) != null) {
+            rooms.get(roomId).runCommands();
+            Logger.instance.debugConsole("Commands has been exectuted for room " + roomId);
+        }
+        Logger.instance.debugConsole("Room " + roomId + " does not exists");
     }
 
     public static boolean isWellFormated(String dungeonName) {
@@ -106,14 +107,18 @@ public class Dungeon {
 
             if (!dungeonFile.contains("world")  ||
                 !dungeonFile.contains("duration") ||
-                !dungeonFile.contains("reset.location.x") ||
-                !dungeonFile.contains("reset.location.y") ||
-                !dungeonFile.contains("reset.location.z") ||
-                !dungeonFile.contains("reset.location.yaw") ||
-                !dungeonFile.contains("reset.location.pitch") ||
-                !dungeonFile.contains("reset.title") ||
-                !dungeonFile.contains("reset.subtitle") ||
-                !dungeonFile.contains("reset.command")) {
+                !dungeonFile.contains("dungeon.location.x") ||
+                !dungeonFile.contains("dungeon.location.y") ||
+                !dungeonFile.contains("dungeon.location.z") ||
+                !dungeonFile.contains("dungeon.location.yaw") ||
+                !dungeonFile.contains("dungeon.location.pitch") ||
+                !dungeonFile.contains("dungeon.range") ||
+                !dungeonFile.contains("dungeon.running_error.title") ||
+                !dungeonFile.contains("dungeon.running_error.subtitle") ||
+                !dungeonFile.contains("dungeon.running_error.commands") ||
+                !dungeonFile.contains("dungeon.reset.title") ||
+                !dungeonFile.contains("dungeon.reset.subtitle") ||
+                !dungeonFile.contains("dungeon.reset.commands")) {
                     Logger.instance.warning("File " + dungeonName + " has a reset element missing.");
                     return (false);
             }
@@ -142,6 +147,7 @@ public class Dungeon {
             }
         } catch (Exception e) {
             Logger.instance.warning("Dungeon " + dungeonName + " file could not be loaded.");
+            Logger.instance.exception(e);
             return (false);
         }
         return (true);
@@ -149,6 +155,10 @@ public class Dungeon {
 
     public Gate getGate(int gateId) {
         return (gates.get(gateId));
+    }
+
+    public Room getRoom(int roomId) {
+        return (rooms.get(roomId));
     }
 
     public List<String> getGatesIds() {
@@ -164,40 +174,102 @@ public class Dungeon {
         if (!isWellFormated(name))
             return;
         try {
+            Logger.instance.info("Dungeon " + name + " is loading.");
+
             YamlConfiguration dungeonFile = new YamlConfiguration();
-            dungeonFile.load(SimpleDungeon.getInstance().getDataFolder().getPath() + "/" + name);
+            dungeonFile.load(SimpleDungeon.getInstance().getDataFolder().getPath() + "/dungeons/" + name + ".yml");
 
             world = SimpleDungeon.getInstance().getServer().getWorld(dungeonFile.getString("world"));
 
+            if (world == null) {
+                Logger.instance.error("World " + dungeonFile.getString("world") + " does not exists");
+                throw new NullPointerException();
+            }
+
             duration = dungeonFile.getInt("duration");
+            
+            dungeonLocation = new Location(world,
+                dungeonFile.getInt("dungeon.location.x"),
+                dungeonFile.getInt("dungeon.location.y"),
+                dungeonFile.getInt("dungeon.location.z"),
+                dungeonFile.getInt("dungeon.location.yaw"),
+                dungeonFile.getInt("dungeon.location.pitch"));
 
-            resetLocation = new Location(world,
-            dungeonFile.getInt("reset.location.x"),
-            dungeonFile.getInt("reset.location.y"),
-            dungeonFile.getInt("reset.location.z"),
-            dungeonFile.getInt("reset.location.yaw"),
-            dungeonFile.getInt("reset.location.pitch"));    
+            dungeonRange = dungeonFile.getInt("dungeon.range");
 
-            resetTitles.put("title", dungeonFile.getString("reset.title"));
-
-            resetTitles.put("subtitle", dungeonFile.getString("reset.subtitle"));
-                
-
-            resetCommand = dungeonFile.getString("reset.command");
-
-            for (int id = 0; dungeonFile.contains("gate_" + id); id++) {
-                gates.get(id).reload(dungeonFile, id);
+            if (titles.containsKey("reset_title")) {
+                titles.replace("reset_title", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.reset.title")));
+            } else {
+                titles.put("reset_title", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.reset.title")));
             }
 
-            for (int id = 0; dungeonFile.contains("room_" + id); id++) {
-                rooms.get(id).reload(dungeonFile, id);
+            if (titles.containsKey("reset_subtitle")) {
+                titles.replace("reset_subtitle", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.reset.subtitle")));
+            } else {
+                titles.put("reset_subtitle", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.reset.subtitle")));
             }
+
+            if (titles.containsKey("running_error_title")) {
+                titles.replace("running_error_title", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.running_error.title")));
+            } else {
+                titles.put("running_error_title", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.running_error.title")));
+            }
+
+            if (titles.containsKey("running_error_subtitle")) {
+                titles.replace("running_error_subtitle", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.running_error.subtitle")));
+            } else {
+                titles.put("running_error_subtitle", ChatColor.translateAlternateColorCodes('&', dungeonFile.getString("dungeon.running_error.subtitle")));
+            }
+
+            List<?> yamlList = dungeonFile.getList("dungeon.running_error.commands");
+
+            errorCommands.clear();
+            for (int i = 0; yamlList != null &&  i < yamlList.size(); i++) {
+                if (yamlList.get(i) instanceof String) {
+                    Logger.instance.debugConsole("Command " + (String)yamlList.get(i) + " added upon running error.");
+                    errorCommands.add((String)yamlList.get(i));
+                } else {
+                    Logger.instance.error(yamlList.get(i).toString() + " is not a valid command.");
+                }
+            }
+
+            yamlList = dungeonFile.getList("dungeon.reset.commands");
+
+            resetCommands.clear();
+            for (int i = 0; yamlList != null &&  i < yamlList.size(); i++) {
+                if (yamlList.get(i) instanceof String) {
+                    Logger.instance.debugConsole("Command " + (String)yamlList.get(i) + " added upon reset.");
+                    resetCommands.add((String)yamlList.get(i));
+                } else {
+                    Logger.instance.error(yamlList.get(i).toString() + " is not a valid command.");
+                }
+            }
+
+            for (int id = 1; dungeonFile.contains("gate_" + id); id++) {
+                if (gates.get(id) == null)
+                    gates.put(id, new Gate(dungeonFile, id));    
+                else
+                    gates.get(id).reload(dungeonFile, id);
+            }
+
+            for (int id = 1; dungeonFile.contains("room_" + id); id++) {
+                if (rooms.get(id) == null)
+                    rooms.put(id, new Room(dungeonFile, id));
+                else
+                    rooms.get(id).reload(dungeonFile, id);
+            }
+
+            Logger.instance.info(name + " dungeon has been loaded properly");
         } catch (Exception e) {
+            Logger.instance.debugConsole("Exception");
             Logger.instance.warning("Dungeon " + name + " file could not be loaded.");
+            Logger.instance.exception(e);
         }
     }
 
     public boolean isRunning() {
         return (isRunning);
     }
+
+
 }

@@ -68,6 +68,6 @@ public class DungeonManager {
             } else {
                 Logger.instance.error(yamlList.get(i).toString() + " is not a valid dungeon name.");
             }
-          }
+        }
     }
 }

@@ -5,6 +5,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+
 import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
 
 public class Utils {
@@ -38,7 +42,26 @@ public class Utils {
             success = false;
         }
 
-        return success;
+        return (success);
+    }
 
+    private static String getClosestPlayer(Location l) {
+        String name = "";
+        int distance = -1;
+
+        for (Player p : l.getWorld().getPlayers()) {
+            if (distance == -1 || p.getLocation().distance(l) < distance)
+                name = p.getName();
+        }
+        return (name);
+    }
+
+    public static String formatCommand (String command, Location l) {
+        if (command.contains("{player}")) {
+            String name = getClosestPlayer(l);
+            Logger.instance.debugConsole("Closest Player is : " + name);
+            command = command.replaceAll("\\{player\\}", name);
+        }
+        return (command);
     }
 }

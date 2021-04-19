@@ -18,7 +18,7 @@ prefix: ${artifactId}
 
 main: ${groupId}.${artifactId}
 depend: []
-softdepend: []
+softdepend: ["Multiverse-Core"]
 
 
 ######################################
@@ -29,7 +29,8 @@ commands:
     Dungeon:
         aliases: [dun, d]
         description: Command used to manage dungeons
-        usage: /dungeon help get info on command
+        usage: test
+        # usage: /dungeon help get info on command
 
 #########################################
 #    Permissions Related Information    #

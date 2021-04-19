@@ -1,0 +1,122 @@
+# Jamais utiliser uniquement la pour vous aider a vous y reperer
+name: Auberge
+# Monde dans lequel se situe le donjon
+world: aventure
+# Temps (en secondes) apres lequel le donjon se restart
+duration: 3600 
+
+
+error:
+    commands: []
+
+
+
+# Informations relatives au reset du donjon
+reset:
+    # Position a laquelle les joueurs seront teleportes lors du reset
+    location:
+        x: 2500
+        y: 73
+        z: 3298
+        yaw: 0
+        pitch: 0
+    # Titre and sous-titre qui sera affiche au joueur lors du reset du donjon
+    title: "Echec"
+    subtitle: "Vous avez mis trop de temps a completer le donjon"
+    # Commande a executer a la fin du reset du donjon
+    commands: ["broadcast Le donjon de l'auberge et de nouveau disponible !"]
+
+
+############
+#  Portes  #
+############
+# Informations importantes :
+# Les ids des portes commencent toujours a 1 et doivent se suivre.
+# Les portes ayant un id inferieur ou egal a 0 ne seront pas chargees.
+# Idem pour les portes ayant un ID qui contiendrait autre chose que des numeros
+
+gate_1:
+    # Duree (en seconde) durant laquelle la porte reste ouverte
+    duration: 30
+    # Distance (en block) a laquelle le titre doit etre afficher (depuis le debut de la porte)
+    around: 25
+    # Titre et sous-titre a addicher lorsque la porte s'ouvre
+    title: "La porte est ouverte pendant 30s"
+    subtitle: "FONCE !"
+    # Position du debut de la porte
+    start: 
+        x: 2500
+        y: 74
+        z: 3300
+    # Position de fin de la porte
+    end:
+        x: 2500
+        y: 73
+        z: 3300
+    # Materiaux a utiliser pour l'ouverture et pour la fermeture de la porte
+    material:
+        open: air
+        close: barrier
+    # Commande a executer lorsque la porte se ferme
+    commands: ["mm mobs spawn Chevalier_noir 1 aventure,2500,67,3325.5"]
+
+
+gate_2:
+    # Duree (en seconde) durant laquelle la porte reste ouverte
+    duration: 30
+    # Distance (en block) a laquelle le titre doit etre afficher (depuis le debut de la porte)
+    around: 30
+    # Titre et sous-titre a addicher lorsque la porte s'ouvre
+    title: "La porte est ouverte pendant 30s"
+    subtitle: "FONCE !"
+    # Position du debut de la porte
+    start: 
+        x: 2500
+        y: 68
+        z: 3339
+    # Position de fin de la porte
+    end:
+        x: 2499
+        y: 70
+        z: 3339
+    # Materiaux a utiliser pour l'ouverture et pour la fermeture de la porte
+    material:
+        open: air
+        close: nether_wart_block
+    # Commande a executer lorsque la porte se ferme
+    commands: ["mm mobs spawn Faux-mage_blanc 1 aventure,2500,66,3380.5"]
+
+
+############
+#  Salles  #
+############
+# Informations importantes :
+# Les ids des salles commencent toujours a 1 et doivent se suivre.
+# Les salles ayant un id inferieur ou egal a 0 ne seront pas chargees.
+# Idem pour les salles ayant un ID qui contiendrait autre chose que des numeros
+
+room_1:
+    # Position du centre de la piece
+    location:
+        x: 2500
+        y: 68
+        z: 3320
+    # Radius (en blocs) de la salle. La salle est considerer comme un cercle.
+    size: 19
+    # Commande a executer au reset de la salle
+    commands: ["mm mobs kill Chevalier_noir"]
+    # Acive ou desactive le loot MINECRAFT des mobs au moment du reset dans la salle
+    disable_loot: true
+
+room_2:
+    # Position du centre de la piece
+    location:
+        x: 2500
+        y: 69
+        z: 3361
+    # Radius (en blocs) de la salle. La salle est considerer comme un cercle.
+    size: 28
+    # Commande a executer au reset de la salle
+    commands: ["mm mobs kill Faux-mage_blanc"]
+    # Acive ou desactive le loot MINECRAFT des mobs au moment du reset dans la salle
+    disable_loot: true

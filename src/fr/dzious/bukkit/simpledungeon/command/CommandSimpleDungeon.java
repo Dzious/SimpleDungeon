@@ -5,13 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
-import fr.dzious.bukkit.simpledungeon.utils.Utils;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+
+import fr.dzious.bukkit.simpledungeon.SimpleDungeon;
+import fr.dzious.bukkit.simpledungeon.utils.Utils;
 
 public class CommandSimpleDungeon implements CommandExecutor, TabCompleter {
 
